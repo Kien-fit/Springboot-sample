@@ -19,9 +19,11 @@
 - Maven 3.5+
 - Spring Boot 3.2.*
 - Lombok
+- DevTools
 
 ---
-## Cấu Hình CORS Trong Spring Boot
+
+## Cấu Hình API Documents, Swagger Cho Spring Boot
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/config-cors-for-app
+- git checkout feature/api-document-swagger
