@@ -21,7 +21,7 @@
 - Lombok
 
 ---
-## Multiple Language Trong Spring Boot
+## Cấu Hình CORS Trong Spring Boot
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/i18n-for-restful-api
+- git checkout feature/config-cors-for-app
