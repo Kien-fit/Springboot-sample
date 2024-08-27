@@ -21,7 +21,7 @@
 - Lombok
 
 ---
-## Thêm Lombok Vào Application
+## Multiple Language Trong Spring Boot
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/add-lombok-to-application
+- git checkout feature/i18n-for-restful-api
