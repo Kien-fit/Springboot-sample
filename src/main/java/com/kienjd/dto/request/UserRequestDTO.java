@@ -20,6 +20,7 @@ import java.util.Set;
 
 import static com.kienjd.util.Gender.*;
 
+@Getter
 public class UserRequestDTO implements Serializable {
 
     @NotBlank(message = "firstName must be not blank") // Khong cho phep gia tri blank
