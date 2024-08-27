@@ -20,7 +20,7 @@
 - Spring Boot 3.2.*
 
 ---
-## Validate Data Trong Spring Boot
+## Validate Enum Trong Spring Boot
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/validate-input-data
+- git checkout feature/validate-enum
