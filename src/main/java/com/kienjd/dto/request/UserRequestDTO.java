@@ -12,6 +12,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -64,6 +65,7 @@ public class UserRequestDTO implements Serializable {
         this.phone = phone;
     }
 
+    @Getter
     public static class Address {
         private String apartmentNumber;
         private String floor;
@@ -74,132 +76,6 @@ public class UserRequestDTO implements Serializable {
         private String country;
         private Integer addressType;
 
-        public String getApartmentNumber() {
-            return apartmentNumber;
-        }
-
-        public void setApartmentNumber(String apartmentNumber) {
-            this.apartmentNumber = apartmentNumber;
-        }
-
-        public String getFloor() {
-            return floor;
-        }
-
-        public void setFloor(String floor) {
-            this.floor = floor;
-        }
-
-        public String getBuilding() {
-            return building;
-        }
-
-        public void setBuilding(String building) {
-            this.building = building;
-        }
-
-        public String getStreetNumber() {
-            return streetNumber;
-        }
-
-        public void setStreetNumber(String streetNumber) {
-            this.streetNumber = streetNumber;
-        }
-
-        public String getStreet() {
-            return street;
-        }
-
-        public void setStreet(String street) {
-            this.street = street;
-        }
-
-        public String getCity() {
-            return city;
-        }
-
-        public void setCity(String city) {
-            this.city = city;
-        }
-
-        public String getCountry() {
-            return country;
-        }
-
-        public void setCountry(String country) {
-            this.country = country;
-        }
-
-        public Integer getAddressType() {
-            return addressType;
-        }
-
-        public void setAddressType(Integer addressType) {
-            this.addressType = addressType;
-        }
     }
 
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public Date getDateOfBirth() {
-        return dateOfBirth;
-    }
-
-    public void setDateOfBirth(Date dateOfBirth) {
-        this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Address> getAddresses() {
-        return addresses;
-    }
-
-    public void setAddresses(Set<Address> addresses) {
-        this.addresses = addresses;
-    }
 }
