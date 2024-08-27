@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import com.kienjd.dto.UserRequestDTO;
+import com.kienjd.dto.request.UserRequestDTO;
 
 import java.util.List;
 

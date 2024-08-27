@@ -1,4 +1,4 @@
-package com.kienjd.util;
+package com.kienjd.dto.validator;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

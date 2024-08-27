@@ -1,15 +1,23 @@
-package com.kienjd.dto;
+package com.kienjd.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.kienjd.dto.validator.EnumPattern;
+import com.kienjd.dto.validator.EnumValue;
+import com.kienjd.dto.validator.GenderSubset;
+import com.kienjd.dto.validator.PhoneNumber;
+import com.kienjd.util.Gender;
+import com.kienjd.util.UserStatus;
+import com.kienjd.util.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import com.kienjd.util.PhoneNumber;
 
 import java.io.Serializable;
 import java.util.Date;
 import java.util.Set;
+
+import static com.kienjd.util.Gender.*;
 
 public class UserRequestDTO implements Serializable {
 
@@ -30,14 +38,24 @@ public class UserRequestDTO implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
 
+    //@Pattern(regexp = "^male|female|other$", message = "gender must be one in {male, female, other}")
+    @GenderSubset(anyOf = {MALE, FEMALE, OTHER})
+    private Gender gender;
     @NotNull(message = "username must be not null")
     private String username;
 
     @NotNull(message = "password must be not null")
     private String password;
 
+    @NotNull(message = "type must be not null")
+    @EnumValue(name = "type", enumClass = UserType.class)
+    private String type;
+
     @NotEmpty(message = "addresses can not empty")
     private Set<Address> addresses;
+
+    @EnumPattern(name = "status", regexp = "ACTIVE|INACTIVE|NONE")
+    private UserStatus status;
 
     public UserRequestDTO(String firstName, String lastName, String email, String phone) {
         this.firstName = firstName;
