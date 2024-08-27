@@ -18,9 +18,10 @@
 - Java 17
 - Maven 3.5+
 - Spring Boot 3.2.*
+- Lombok
 
 ---
-## Handle Exception Trong Spring Boot
+## Thêm Lombok Vào Application
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/handle-exception
+- git checkout feature/add-lombok-to-application
