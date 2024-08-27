@@ -1,7 +1,6 @@
 package com.kienjd.controller;
 
-import com.kienjd.dto.response.ResponseFailure;
-import com.kienjd.dto.response.ResponseSuccess;
+import com.kienjd.dto.response.ResponseData;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
@@ -17,64 +16,40 @@ import java.util.List;
 public class UserController {
 
     @PostMapping("/")
-    public ResponseSuccess addUser(@Valid @RequestBody UserRequestDTO user) {
+    public ResponseData<Integer> addUser(@Valid @RequestBody UserRequestDTO user) {
         System.out.println("Request add user " + user.getFirstName());
-
-        try {
-            return new ResponseSuccess(HttpStatus.CREATED, "User added successfully,", 1);
-        } catch (Exception e) {
-            return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return new ResponseData<>(HttpStatus.CREATED.value(), "User added successfully,", 1);
     }
 
     @PutMapping("/{userId}")
-    public ResponseSuccess updateUser(@PathVariable @Min(1) int userId, @Valid @RequestBody UserRequestDTO user) {
+    public ResponseData<?> updateUser(@PathVariable @Min(1) int userId, @Valid @RequestBody UserRequestDTO user) {
         System.out.println("Request update userId=" + userId);
-
-        try {
-            return new ResponseSuccess(HttpStatus.ACCEPTED, "User updated successfully");
-        } catch (Exception e) {
-            return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User updated successfully");
     }
 
     @PatchMapping("/{userId}")
-    public ResponseSuccess updateStatus(@Min(1) @PathVariable int userId, @RequestParam boolean status) {
+    public ResponseData<?> updateStatus(@Min(1) @PathVariable int userId, @RequestParam boolean status) {
         System.out.println("Request change status, userId=" + userId);
-
-        try {
-            return new ResponseSuccess(HttpStatus.ACCEPTED, "User's status changed successfully");
-        } catch (Exception e) {
-            return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return new ResponseData<>(HttpStatus.ACCEPTED.value(), "User's status changed successfully");
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseSuccess deleteUser(@PathVariable @Min(value = 1, message = "userId must be greater than 0") int userId) {
+    public ResponseData<?> deleteUser(@PathVariable @Min(value = 1, message = "userId must be greater than 0") int userId) {
         System.out.println("Request delete userId=" + userId);
-
-        try {
-            return new ResponseSuccess(HttpStatus.NO_CONTENT, "User deleted successfully");
-        } catch (Exception e) {
-            return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return new ResponseData<>(HttpStatus.NO_CONTENT.value(), "User deleted successfully");
     }
 
     @GetMapping("/{userId}")
-    public ResponseSuccess getUser(@PathVariable @Min(1) int userId) {
+    public ResponseData<UserRequestDTO> getUser(@PathVariable @Min(1) int userId) {
         System.out.println("Request get user detail, userId=" + userId);
 
-        try {
-            return new ResponseSuccess(HttpStatus.OK, "user", new UserRequestDTO("Kien", "Jd", "admin@kienjd.vn", "0123456789"));
-        } catch (Exception e) {
-            return new ResponseFailure(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+            return new ResponseData<>(HttpStatus.OK.value(), "user", new UserRequestDTO("Kien", "Jd", "admin@kienjd.vn", "0123456789"));
     }
 
     @GetMapping("/list")
-    public ResponseSuccess getAllUser(@RequestParam(defaultValue = "0", required = false) int pageNo,
+    public ResponseData<List<UserRequestDTO>> getAllUser(@RequestParam(defaultValue = "0", required = false) int pageNo,
                                            @Min(10) @RequestParam(defaultValue = "20", required = false) int pageSize) {
-        return new ResponseSuccess(HttpStatus.OK, "users", List.of(new UserRequestDTO("Kien", "Jd", "admin@kienjd.vn", "0123456789"),
+        return new ResponseData<>(HttpStatus.OK.value(), "users", List.of(new UserRequestDTO("Kien", "Jd", "admin@kienjd.vn", "0123456789"),
                 new UserRequestDTO("Leo", "Messi", "leomessi@email.com", "0123456456")));
     }
 }
