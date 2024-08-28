@@ -1,4 +1,4 @@
-package com.kienjd.connfiguration;
+package com.kienjd.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
