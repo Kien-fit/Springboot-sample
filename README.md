@@ -23,7 +23,7 @@
 
 ---
 
-## Cấu Hình API Documents, Swagger Cho Spring Boot
+## Build Ứng Dụng Spring Boot với Maven Profile
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/api-document-swagger
+- git checkout feature/config-maven-profiles
