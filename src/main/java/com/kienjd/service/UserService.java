@@ -4,6 +4,7 @@ import com.kienjd.dto.request.UserRequestDTO;
 import com.kienjd.dto.response.PageResponse;
 import com.kienjd.dto.response.UserDetailResponse;
 import com.kienjd.util.UserStatus;
+import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 
@@ -26,4 +27,6 @@ public interface UserService {
     PageResponse<?> getAllUsersAndSearchWithPagingAndSorting(int pageNo, int pageSize, String search, String sortBy);
 
     PageResponse<?> advanceSearchWithCriteria(int pageNo, int pageSize, String sortBy, String address, String... search);
+
+    PageResponse<?> advanceSearchWithSpecifications(Pageable pageable, String[] user, String[] address);
 }

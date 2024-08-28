@@ -1,6 +1,7 @@
 package com.kienjd.service.impl;
 
 import com.kienjd.repository.SearchRepository;
+import com.kienjd.repository.specification.UserSpecificationsBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -21,13 +22,11 @@ import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.kienjd.util.AppConst.SEARCH_SPEC_OPERATOR;
 import static com.kienjd.util.AppConst.SORT_BY;
 
 @Service
@@ -181,9 +180,9 @@ public class UserServiceImpl implements UserService {
                 .toList();
 
         return PageResponse.builder()
-                .pageNo(pageNo)
-                .pageSize(pageSize)
-                .totalPage(page.getTotalPages())
+                .page(pageNo)
+                .size(pageSize)
+                .total(page.getTotalPages())
                 .items(list)
                 .build();
     }
@@ -221,9 +220,9 @@ public class UserServiceImpl implements UserService {
                 .phone(user.getPhone())
                 .build()).toList();
         return PageResponse.builder()
-                .pageNo(pageNo)
-                .pageSize(pageSize)
-                .totalPage(users.getTotalPages())
+                .page(pageNo)
+                .size(pageSize)
+                .total(users.getTotalPages())
                 .items(response)
                 .build();
     }
@@ -264,9 +263,9 @@ public class UserServiceImpl implements UserService {
                 .phone(user.getPhone())
                 .build()).toList();
         return PageResponse.builder()
-                .pageNo(pageNo)
-                .pageSize(pageSize)
-                .totalPage(users.getTotalPages())
+                .page(pageNo)
+                .size(pageSize)
+                .total(users.getTotalPages())
                 .items(response)
                 .build();
     }
@@ -279,6 +278,31 @@ public class UserServiceImpl implements UserService {
     @Override
     public PageResponse<?> advanceSearchWithCriteria(int pageNo, int pageSize, String sortBy, String address, String... search) {
         return searchRepository.searchUserByCriteria(pageNo, pageSize, sortBy, address, search);
+    }
+
+    @Override
+    public PageResponse<?> advanceSearchWithSpecifications(Pageable pageable, String[] user, String[] address) {
+        log.info("getUsersBySpecifications");
+
+        if (user != null && address != null) {
+            return searchRepository.searchUserByCriteriaWithJoin(pageable, user, address);
+        } else if (user != null) {
+            UserSpecificationsBuilder builder = new UserSpecificationsBuilder();
+
+            Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
+            for (String s : user) {
+                Matcher matcher = pattern.matcher(s);
+                if (matcher.find()) {
+                    builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));
+                }
+            }
+
+            Page<User> users = userRepository.findAll(Objects.requireNonNull(builder.build()), pageable);
+
+            return convertToPageResponse(users, pageable);
+        }
+
+        return convertToPageResponse(userRepository.findAll(pageable), pageable);
     }
 
     private User getUserById(long userId) {
@@ -307,5 +331,28 @@ public class UserServiceImpl implements UserService {
                         .build())
         );
         return result;
+    }
+
+    /**
+     * Convert Page<User> to PageResponse
+     *
+     * @param users
+     * @param pageable
+     * @return
+     */
+    private PageResponse<?> convertToPageResponse(Page<User> users, Pageable pageable) {
+        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build()).toList();
+        return PageResponse.builder()
+                .page(pageable.getPageNumber())
+                .size(pageable.getPageSize())
+                .total(users.getTotalPages())
+                .items(response)
+                .build();
     }
 }

@@ -20,6 +20,7 @@
 - Spring Boot 3.2.*
 - Spring Data Validation
 - Spring Data JPA
+- Postgres
 - Lombok
 - DevTools
 - Docker, Docker compose
@@ -29,4 +30,4 @@
 ## Topic: Spring Data JPA - Series
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/advanceSearch-jpa-specification
+- git checkout feature/jpa-query-method
