@@ -1,6 +1,6 @@
 package com.kienjd.controller;
 
-import com.kienjd.connfiguration.Translator;
+import com.kienjd.configuration.Translator;
 import com.kienjd.dto.response.ResponseData;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

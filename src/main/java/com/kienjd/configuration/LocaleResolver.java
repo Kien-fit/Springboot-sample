@@ -1,4 +1,4 @@
-package com.kienjd.connfiguration;
+package com.kienjd.configuration;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
