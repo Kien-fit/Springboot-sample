@@ -1,5 +1,6 @@
 package com.kienjd.service;
 
+import com.kienjd.model.RedisToken;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final RedisTokenService redisTokenService;
     private final UserService userService;
     private final JwtService jwtService;
 
@@ -52,7 +54,9 @@ public class AuthenticationService {
         String refreshToken = jwtService.generateRefreshToken(user);
 
         // save token to db
-        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+//        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        redisTokenService.save(RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+
 
         return TokenResponse.builder()
                 .accessToken(accessToken)
@@ -84,7 +88,8 @@ public class AuthenticationService {
         String accessToken = jwtService.generateToken(user);
 
         // save token to db
-        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+//        tokenService.save(Token.builder().username(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
+        redisTokenService.save(RedisToken.builder().id(user.getUsername()).accessToken(accessToken).refreshToken(refreshToken).build());
 
         return TokenResponse.builder()
                 .accessToken(accessToken)
@@ -109,7 +114,8 @@ public class AuthenticationService {
 
         final String userName = jwtService.extractUsername(token, ACCESS_TOKEN);
 
-        tokenService.delete(userName);
+//        tokenService.delete(userName);
+        redisTokenService.remove(userName);
 
         return "Removed!";
     }
@@ -129,7 +135,8 @@ public class AuthenticationService {
         String resetToken = jwtService.generateResetToken(user);
 
         // save to db
-        tokenService.save(Token.builder().username(user.getUsername()).resetToken(resetToken).build());
+//        tokenService.save(Token.builder().username(user.getUsername()).resetToken(resetToken).build());
+        redisTokenService.save(RedisToken.builder().id(user.getUsername()).resetToken(resetToken).build());
 
         // TODO send email to user
         String confirmLink = String.format("curl --location 'http://localhost:80/auth/reset-password' \\\n" +
@@ -185,6 +192,9 @@ public class AuthenticationService {
     private User validateToken(String token) {
         // validate token
         var userName = jwtService.extractUsername(token, RESET_TOKEN);
+
+        // check token in redis
+        redisTokenService.isExists(userName);
 
         // validate user is active or not
         var user = userService.getByUsername(userName);
