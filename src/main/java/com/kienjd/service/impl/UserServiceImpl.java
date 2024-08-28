@@ -1,11 +1,13 @@
 package com.kienjd.service.impl;
 
+import com.kienjd.repository.SearchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import com.kienjd.configuration.Translator;
 import com.kienjd.dto.request.AddressDTO;
 import com.kienjd.dto.request.UserRequestDTO;
 import com.kienjd.dto.response.PageResponse;
@@ -17,10 +19,16 @@ import com.kienjd.repository.UserRepository;
 import com.kienjd.service.UserService;
 import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
+import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.kienjd.util.AppConst.SORT_BY;
 
 @Service
 @Slf4j
@@ -28,6 +36,8 @@ import java.util.Set;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private final SearchRepository searchRepository;
 
     /**
      * Save new user to DB
@@ -48,7 +58,6 @@ public class UserServiceImpl implements UserService {
                 .password(request.getPassword())
                 .status(request.getStatus())
                 .type(UserType.valueOf(request.getType().toUpperCase()))
-                .addresses(convertToAddress(request.getAddresses()))
                 .build();
         request.getAddresses().forEach(a ->
                 user.saveAddress(Address.builder()
@@ -61,9 +70,10 @@ public class UserServiceImpl implements UserService {
                         .country(a.getCountry())
                         .addressType(a.getAddressType())
                         .build()));
+
         userRepository.save(user);
 
-        log.info("User has added successfully, userId={}", user.getId());
+        log.info("User has saved!");
 
         return user.getId();
     }
@@ -93,7 +103,7 @@ public class UserServiceImpl implements UserService {
         user.setAddresses(convertToAddress(request.getAddresses()));
         userRepository.save(user);
 
-        log.info("User has updated successfully, userId={}", userId);
+        log.info("User updated successfully");
     }
 
     /**
@@ -108,7 +118,7 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
         userRepository.save(user);
 
-        log.info("User status has changed successfully, userId={}", userId);
+        log.info("User status has changed successfully!");
     }
 
     /**
@@ -119,7 +129,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
-        log.info("User has deleted permanent successfully, userId={}", userId);
+        log.info("User has deleted permanent successfully!");
     }
 
     /**
@@ -178,15 +188,103 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    /**
-     * Get user by userId
-     *
-     * @param userId
-     * @return User
-     */
-    private User getUserById(long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException(Translator.toLocale("user.not.found")));
+    @Override
+    public PageResponse<?> getAllUsersWithSortBy(int pageNo, int pageSize, String sortBy) {
+        int page = 0;
+        if (pageNo > 0) {
+            page = pageNo - 1;
+        }
+
+        List<Sort.Order> sorts = new ArrayList<>();
+
+        if (StringUtils.hasLength(sortBy)) {
+            // firstName:asc|desc
+            Pattern pattern = Pattern.compile(SORT_BY);
+            Matcher matcher = pattern.matcher(sortBy);
+            if (matcher.find()) {
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    sorts.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+                } else {
+                    sorts.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+                }
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sorts));
+
+        Page<User> users = userRepository.findAll(pageable);
+        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build()).toList();
+        return PageResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalPage(users.getTotalPages())
+                .items(response)
+                .build();
     }
+
+    @Override
+    public PageResponse<?> getAllUsersWithSortByMultipleColumns(int pageNo, int pageSize, String... sorts) {
+        int page = 0;
+        if (pageNo > 0) {
+            page = pageNo - 1;
+        }
+
+        List<Sort.Order> orders = new ArrayList<>();
+
+        if (sorts != null) {
+            for (String sortBy : sorts) {
+                log.info("sortBy: {}", sortBy);
+                // firstName:asc|desc
+                Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
+                Matcher matcher = pattern.matcher(sortBy);
+                if (matcher.find()) {
+                    if (matcher.group(3).equalsIgnoreCase("asc")) {
+                        orders.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
+                    } else {
+                        orders.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
+                    }
+                }
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(orders));
+
+        Page<User> users = userRepository.findAll(pageable);
+        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build()).toList();
+        return PageResponse.builder()
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalPage(users.getTotalPages())
+                .items(response)
+                .build();
+    }
+
+    @Override
+    public PageResponse<?> getAllUsersAndSearchWithPagingAndSorting(int pageNo, int pageSize, String search, String sort) {
+        return searchRepository.searchUser(pageNo, pageSize, search, sort);
+    }
+
+    @Override
+    public PageResponse<?> advanceSearchWithCriteria(int pageNo, int pageSize, String sortBy, String address, String... search) {
+        return searchRepository.searchUserByCriteria(pageNo, pageSize, sortBy, address, search);
+    }
+
+    private User getUserById(long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+    }
+
 
     /**
      * Covert Set<AddressDTO> to Set<Address>

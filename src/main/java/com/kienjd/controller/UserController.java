@@ -95,7 +95,8 @@ public class UserController {
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }    }
 
-    @Operation(summary = "Get list of users per pageNo", description = "Send a request via this API to get user list by pageNo and pageSize")
+    @Operation(summary = "Get list of users per pageNo",
+            description = "Send a request via this API to get user list by pageNo and pageSize")
     @GetMapping("/list")
     public ResponseData<PageResponse> getAllUser(@RequestParam(defaultValue = "0", required = false) int pageNo,
                                            @Min(10) @RequestParam(defaultValue = "20", required = false) int pageSize) {
@@ -108,5 +109,48 @@ public class UserController {
             log.error(ERROR_MESSAGE, e.getMessage(), e.getCause());
             return new ResponseError(HttpStatus.BAD_REQUEST.value(), e.getMessage());
         }
+    }
+
+    @Operation(summary = "Get list of users per pageNo",
+            description = "Send a request via this API to get user list by pageNo and pageSize")
+    @GetMapping("/list")
+    public ResponseData<?> getAllUsers(@RequestParam(defaultValue = "0", required = false) int pageNo,
+                                       @Min(10) @RequestParam(defaultValue = "20", required = false) int pageSize,
+                                       @RequestParam(required = false) String sortBy) {
+        log.info("Request get all of users");
+        return new ResponseData<>(HttpStatus.OK.value(), "users", userService.getAllUsersWithSortBy(pageNo, pageSize, sortBy));
+    }
+
+    @Operation(summary = "Get list of users with sort by multiple columns",
+            description = "Send a request via this API to get user list by pageNo, pageSize and sort by multiple column")
+    @GetMapping("/list-with-sort-by-multiple-columns")
+    public ResponseData<?> getAllUsersWithSortByMultipleColumns(@RequestParam(defaultValue = "0", required = false) int pageNo,
+                                                                @RequestParam(defaultValue = "20", required = false) int pageSize,
+                                                                @RequestParam(required = false) String... sorts) {
+        log.info("Request get all of users with sort by multiple columns");
+        return new ResponseData<>(HttpStatus.OK.value(), "users", userService.getAllUsersWithSortByMultipleColumns(pageNo, pageSize, sorts));
+    }
+
+    @Operation(summary = "Get list of users and search with paging and sorting by customize query",
+            description = "Send a request via this API to get user list by pageNo, pageSize and sort by multiple column")
+    @GetMapping("/list-user-and-search-with-paging-and-sorting")
+    public ResponseData<?> getAllUsersAndSearchWithPagingAndSorting(@RequestParam(defaultValue = "0", required = false) int pageNo,
+                                                                    @RequestParam(defaultValue = "20", required = false) int pageSize,
+                                                                    @RequestParam(required = false) String search,
+                                                                    @RequestParam(required = false) String sortBy) {
+        log.info("Request get list of users and search with paging and sorting");
+        return new ResponseData<>(HttpStatus.OK.value(), "users", userService.getAllUsersAndSearchWithPagingAndSorting(pageNo, pageSize, search, sortBy));
+    }
+
+    @Operation(summary = "Advance search query by criteria",
+            description = "Send a request via this API to get user list by pageNo, pageSize and sort by multiple column")
+    @GetMapping("/advance-search-with-criteria")
+    public ResponseData<?> advanceSearchWithCriteria(@RequestParam(defaultValue = "0", required = false) int pageNo,
+                                                     @RequestParam(defaultValue = "20", required = false) int pageSize,
+                                                     @RequestParam(required = false) String sortBy,
+                                                     @RequestParam(required = false) String address,
+                                                     @RequestParam(defaultValue = "") String... search) {
+        log.info("Request advance search query by criteria");
+        return new ResponseData<>(HttpStatus.OK.value(), "users", userService.advanceSearchWithCriteria(pageNo, pageSize, sortBy, address, search));
     }
 }
