@@ -5,13 +5,8 @@ spring:
 
 springdoc:
   api-docs:
-    enabled: true
+    enabled: false
   swagger-ui:
-    enabled: true
-openapi:
-  service:
-    api-docs: api-service
-    server: http://api-service.local
-    title: API Document
-    version: 1.0.0
+    enabled: false
+
 

@@ -24,7 +24,7 @@
 
 ---
 
-## Docker, Docker compose và Cách Đóng Gói Ứng Dụng Spring Boot
+## Spring Boot, Postgres, JPA Cơ Bản
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/package-app-with-docker
+- git checkout feature/postgres-jpa-basic

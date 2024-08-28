@@ -1,4 +1,4 @@
-package com.kienjd.connfiguration;
+package com.kienjd.configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
@@ -29,7 +29,8 @@ public class OpenAPIConfig {
     public OpenAPI openAPI(
             @Value("${openapi.service.title}") String title,
             @Value("${openapi.service.version}") String version,
-            @Value("${openapi.service.server}") String serverUrl) {
+            @Value("${openapi.service.serverUrl}") String serverUrl,
+            @Value("${openapi.service.serverName}") String serverName) {
         return new OpenAPI()
                 .servers(List.of(new Server().url(serverUrl)))
                 .info(new Info().title(title)

@@ -1,18 +1,18 @@
 package com.kienjd.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.kienjd.dto.validator.EnumPattern;
-import com.kienjd.dto.validator.EnumValue;
-import com.kienjd.dto.validator.GenderSubset;
-import com.kienjd.dto.validator.PhoneNumber;
-import com.kienjd.util.Gender;
-import com.kienjd.util.UserStatus;
-import com.kienjd.util.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import com.kienjd.dto.validator.EnumPattern;
+import com.kienjd.dto.validator.GenderSubset;
+import com.kienjd.dto.validator.PhoneNumber;
+import com.kienjd.dto.validator.EnumValue;
+import com.kienjd.util.Gender;
+import com.kienjd.util.UserStatus;
+import com.kienjd.util.UserType;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -37,12 +37,15 @@ public class UserRequestDTO implements Serializable {
     private String phone;
 
     @NotNull(message = "dateOfBirth must be not null")
+    //@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    //@JsonFormat(pattern = "MM/dd/yyyy")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
 
     //@Pattern(regexp = "^male|female|other$", message = "gender must be one in {male, female, other}")
     @GenderSubset(anyOf = {MALE, FEMALE, OTHER})
     private Gender gender;
+
     @NotNull(message = "username must be not null")
     private String username;
 
@@ -53,11 +56,11 @@ public class UserRequestDTO implements Serializable {
     @EnumValue(name = "type", enumClass = UserType.class)
     private String type;
 
-    @NotEmpty(message = "addresses can not empty")
-    private Set<Address> addresses;
-
     @EnumPattern(name = "status", regexp = "ACTIVE|INACTIVE|NONE")
     private UserStatus status;
+
+    @NotEmpty(message = "addresses can not empty")
+    private Set<AddressDTO> addresses;
 
     public UserRequestDTO(String firstName, String lastName, String email, String phone) {
         this.firstName = firstName;
@@ -65,18 +68,4 @@ public class UserRequestDTO implements Serializable {
         this.email = email;
         this.phone = phone;
     }
-
-    @Getter
-    public static class Address {
-        private String apartmentNumber;
-        private String floor;
-        private String building;
-        private String streetNumber;
-        private String street;
-        private String city;
-        private String country;
-        private Integer addressType;
-
-    }
-
 }
