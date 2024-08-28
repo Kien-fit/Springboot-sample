@@ -33,12 +33,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDetailsService userDetailsService() {
-        return username -> userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        return username -> userRepository.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
+
+    @Override
+    public User getByUsername(String userName) {
+        return userRepository.findByUsername(userName).orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     /**
      * Save new user to DB
+     *
      * @param request
      * @return userId
      */
@@ -66,6 +71,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Update user by userId
+     *
      * @param userId
      * @param request
      */
@@ -93,6 +99,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Change status of user by userId
+     *
      * @param userId
      * @param status
      */
@@ -107,6 +114,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Delete user by userId
+     *
      * @param userId
      */
     @Override
@@ -117,6 +125,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Get user detail by userId
+     *
      * @param userId
      * @return
      */
@@ -139,6 +148,7 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Get all user per pageNo and pageSize
+     *
      * @param pageNo
      * @param pageSize
      * @return
@@ -167,6 +177,11 @@ public class UserServiceImpl implements UserService {
                 .totalPage(page.getTotalPages())
                 .items(list)
                 .build();
+    }
+
+    @Override
+    public List<String> findAllRolesByUserId(long userId) {
+        return userRepository.findAllRolesByUserId(userId);
     }
 
     /**

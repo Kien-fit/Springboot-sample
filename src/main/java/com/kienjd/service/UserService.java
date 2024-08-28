@@ -4,11 +4,16 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import com.kienjd.dto.request.UserRequestDTO;
 import com.kienjd.dto.response.PageResponse;
 import com.kienjd.dto.response.UserDetailResponse;
+import com.kienjd.model.User;
 import com.kienjd.util.UserStatus;
+
+import java.util.List;
 
 public interface UserService {
 
     UserDetailsService userDetailsService();
+
+    User getByUsername(String userName);
 
     long saveUser(UserRequestDTO request);
 
@@ -21,4 +26,6 @@ public interface UserService {
     UserDetailResponse getUser(long userId);
 
     PageResponse<?> getAllUsers(int pageNo, int pageSize);
+
+    List<String> findAllRolesByUserId(long userId);
 }

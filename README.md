@@ -25,7 +25,7 @@
 
 ---
 
-## Spring Security JWT
+## API Security
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/spring-security-jwt
+- git checkout feature/api-security
