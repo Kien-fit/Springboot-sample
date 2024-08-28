@@ -1,4 +1,4 @@
-package com.kienjd.connfiguration;
+package com.kienjd.configuration;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
