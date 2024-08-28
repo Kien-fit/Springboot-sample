@@ -1,7 +1,9 @@
 package com.kienjd.controller;
 
+
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -10,11 +12,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.kienjd.dto.request.ResetPasswordDTO;
 import com.kienjd.dto.request.SignInRequest;
 import com.kienjd.dto.response.TokenResponse;
 import com.kienjd.service.AuthenticationService;
 
 import static org.springframework.http.HttpStatus.OK;
+
 
 @Slf4j
 @Validated
@@ -26,18 +30,33 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
 
-    @PostMapping("/access")
-    public ResponseEntity<TokenResponse> login(@RequestBody SignInRequest request) {
-        return new ResponseEntity<>(authenticationService.authenticate(request), OK);
+    @PostMapping("/access-token")
+    public ResponseEntity<TokenResponse> accessToken(@RequestBody SignInRequest request) {
+        return new ResponseEntity<>(authenticationService.accessToken(request), OK);
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<TokenResponse> refresh(HttpServletRequest request) {
+    @PostMapping("/refresh-token")
+    public ResponseEntity<TokenResponse> refreshToken(HttpServletRequest request) {
         return new ResponseEntity<>(authenticationService.refreshToken(request), OK);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        return new ResponseEntity<>(authenticationService.logout(request), OK);
+    @PostMapping("/remove-token")
+    public ResponseEntity<String> removeToken(HttpServletRequest request) {
+        return new ResponseEntity<>(authenticationService.removeToken(request), OK);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody String email) {
+        return new ResponseEntity<>(authenticationService.forgotPassword(email), OK);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(@RequestBody String secretKey) {
+        return new ResponseEntity<>(authenticationService.resetPassword(secretKey), OK);
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<String> changePassword(@RequestBody @Valid ResetPasswordDTO request) {
+        return new ResponseEntity<>(authenticationService.changePassword(request), OK);
     }
 }

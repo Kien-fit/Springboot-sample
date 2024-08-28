@@ -7,17 +7,19 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.kienjd.dto.request.ResetPasswordDTO;
 import com.kienjd.dto.request.SignInRequest;
 import com.kienjd.dto.response.TokenResponse;
 import com.kienjd.exception.InvalidDataException;
 import com.kienjd.model.Token;
+import com.kienjd.model.User;
 
 import java.util.List;
 
 import static org.springframework.http.HttpHeaders.REFERER;
-import static com.kienjd.util.TokenType.ACCESS_TOKEN;
-import static com.kienjd.util.TokenType.REFRESH_TOKEN;
+import static com.kienjd.util.TokenType.*;
 
 @Slf4j
 @Service
@@ -25,16 +27,20 @@ import static com.kienjd.util.TokenType.REFRESH_TOKEN;
 public class AuthenticationService {
 
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final UserService userService;
     private final JwtService jwtService;
 
-    public TokenResponse authenticate(SignInRequest signInRequest) {
+    public TokenResponse accessToken(SignInRequest signInRequest) {
         log.info("---------- authenticate ----------");
 
         var user = userService.getByUsername(signInRequest.getUsername());
+        if (!user.isEnabled()) {
+            throw new InvalidDataException("User not active");
+        }
 
-        List<String> roles = userService.findAllRolesByUserId(user.getId());
+        List<String> roles = userService.getAllRolesByUserId(user.getId());
         List<SimpleGrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).toList();
 
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(signInRequest.getUsername(), signInRequest.getPassword(), authorities));
@@ -93,8 +99,8 @@ public class AuthenticationService {
      * @param request
      * @return
      */
-    public String logout(HttpServletRequest request) {
-        log.info("---------- logout ----------");
+    public String removeToken(HttpServletRequest request) {
+        log.info("---------- removeToken ----------");
 
         final String token = request.getHeader(REFERER);
         if (StringUtils.isBlank(token)) {
@@ -102,8 +108,90 @@ public class AuthenticationService {
         }
 
         final String userName = jwtService.extractUsername(token, ACCESS_TOKEN);
+
         tokenService.delete(userName);
 
-        return "Deleted!";
+        return "Removed!";
+    }
+
+    /**
+     * Forgot password
+     *
+     * @param email
+     */
+    public String forgotPassword(String email) {
+        log.info("---------- forgotPassword ----------");
+
+        // check email exists or not
+        User user = userService.getUserByEmail(email);
+
+        // generate reset token
+        String resetToken = jwtService.generateResetToken(user);
+
+        // save to db
+        tokenService.save(Token.builder().username(user.getUsername()).resetToken(resetToken).build());
+
+        // TODO send email to user
+        String confirmLink = String.format("curl --location 'http://localhost:80/auth/reset-password' \\\n" +
+                "--header 'accept: */*' \\\n" +
+                "--header 'Content-Type: application/json' \\\n" +
+                "--data '%s'", resetToken);
+        log.info("--> confirmLink: {}", confirmLink);
+
+        return resetToken;
+    }
+
+    /**
+     * Reset password
+     *
+     * @param secretKey
+     * @return
+     */
+    public String resetPassword(String secretKey) {
+        log.info("---------- resetPassword ----------");
+
+        // validate token
+        var user = validateToken(secretKey);
+
+        // check token by username
+        tokenService.getByUsername(user.getUsername());
+
+        return "Reset";
+    }
+
+    public String changePassword(ResetPasswordDTO request) {
+        log.info("---------- changePassword ----------");
+
+        if (!request.getPassword().equals(request.getConfirmPassword())) {
+            throw new InvalidDataException("Passwords do not match");
+        }
+
+        // get user by reset token
+        var user = validateToken(request.getSecretKey());
+
+        // update password
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        userService.saveUser(user);
+
+        return "Changed";
+    }
+
+    /**
+     * Validate user and reset token
+     *
+     * @param token
+     * @return
+     */
+    private User validateToken(String token) {
+        // validate token
+        var userName = jwtService.extractUsername(token, RESET_TOKEN);
+
+        // validate user is active or not
+        var user = userService.getByUsername(userName);
+        if (!user.isEnabled()) {
+            throw new InvalidDataException("User not active");
+        }
+
+        return user;
     }
 }

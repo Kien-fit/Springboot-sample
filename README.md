@@ -25,7 +25,7 @@
 
 ---
 
-## API Security
+## Forgot Password
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/api-security
+- git checkout feature/forgot-password

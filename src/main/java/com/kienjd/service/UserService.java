@@ -17,6 +17,8 @@ public interface UserService {
 
     long saveUser(UserRequestDTO request);
 
+    long saveUser(User user);
+
     void updateUser(long userId, UserRequestDTO request);
 
     void changeStatus(long userId, UserStatus status);
@@ -27,5 +29,7 @@ public interface UserService {
 
     PageResponse<?> getAllUsers(int pageNo, int pageSize);
 
-    List<String> findAllRolesByUserId(long userId);
+    List<String> getAllRolesByUserId(long userId);
+
+    User getUserByEmail(String email);
 }
