@@ -49,6 +49,5 @@ public class ResponseSuccess extends ResponseEntity<ResponseSuccess.Payload> {
             this.message = message;
             this.data = data;
         }
-
     }
 }

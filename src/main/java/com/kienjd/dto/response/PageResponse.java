@@ -3,14 +3,13 @@ package com.kienjd.dto.response;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.io.Serializable;
 
 @Builder
 @Getter
-public class PageResponse<T> implements Serializable {
+public class PageResponse<T> {
 
-    private int page;
-    private int size;
-    private long total;
-    private T items;
+    int pageNo;
+    int pageSize;
+    int totalPage;
+    T items;
 }

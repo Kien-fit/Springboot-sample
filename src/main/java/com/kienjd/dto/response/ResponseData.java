@@ -3,8 +3,10 @@ package com.kienjd.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 
+import java.io.Serializable;
+
 @Getter
-public class ResponseData<T> {
+public class ResponseData<T> implements Serializable {
     private final int status;
     private final String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -31,5 +33,4 @@ public class ResponseData<T> {
         this.status = status;
         this.message = message;
     }
-
 }

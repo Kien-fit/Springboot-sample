@@ -3,13 +3,14 @@ package com.kienjd.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
 @Setter
+@Getter
+@Entity
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "tbl_address")
-public class Address extends AbstractEntity {
+@NoArgsConstructor
+@Table(name = "tbl_address")
+public class Address extends AbstractEntity<Long> {
 
     @Column(name = "apartment_number")
     private String apartmentNumber;

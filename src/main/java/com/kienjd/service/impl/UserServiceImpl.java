@@ -1,14 +1,13 @@
 package com.kienjd.service.impl;
 
-import com.kienjd.repository.SearchRepository;
-import com.kienjd.repository.specification.UserSpecificationsBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import com.kienjd.configuration.Translator;
 import com.kienjd.dto.request.AddressDTO;
 import com.kienjd.dto.request.UserRequestDTO;
 import com.kienjd.dto.response.PageResponse;
@@ -20,14 +19,10 @@ import com.kienjd.repository.UserRepository;
 import com.kienjd.service.UserService;
 import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
-import org.springframework.util.StringUtils;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.kienjd.util.AppConst.SEARCH_SPEC_OPERATOR;
-import static com.kienjd.util.AppConst.SORT_BY;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -36,11 +31,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
-    private final SearchRepository searchRepository;
+    @Override
+    public UserDetailsService userDetailsService() {
+        return username -> userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
 
     /**
      * Save new user to DB
-     *
      * @param request
      * @return userId
      */
@@ -57,29 +55,17 @@ public class UserServiceImpl implements UserService {
                 .password(request.getPassword())
                 .status(request.getStatus())
                 .type(UserType.valueOf(request.getType().toUpperCase()))
+                .addresses(convertToAddress(request.getAddresses()))
                 .build();
-        request.getAddresses().forEach(a ->
-                user.saveAddress(Address.builder()
-                        .apartmentNumber(a.getApartmentNumber())
-                        .floor(a.getFloor())
-                        .building(a.getBuilding())
-                        .streetNumber(a.getStreetNumber())
-                        .street(a.getStreet())
-                        .city(a.getCity())
-                        .country(a.getCountry())
-                        .addressType(a.getAddressType())
-                        .build()));
-
         userRepository.save(user);
 
-        log.info("User has saved!");
+        log.info("User has added successfully, userId={}", user.getId());
 
         return user.getId();
     }
 
     /**
      * Update user by userId
-     *
      * @param userId
      * @param request
      */
@@ -102,12 +88,11 @@ public class UserServiceImpl implements UserService {
         user.setAddresses(convertToAddress(request.getAddresses()));
         userRepository.save(user);
 
-        log.info("User updated successfully");
+        log.info("User has updated successfully, userId={}", userId);
     }
 
     /**
      * Change status of user by userId
-     *
      * @param userId
      * @param status
      */
@@ -117,23 +102,21 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
         userRepository.save(user);
 
-        log.info("User status has changed successfully!");
+        log.info("User status has changed successfully, userId={}", userId);
     }
 
     /**
      * Delete user by userId
-     *
      * @param userId
      */
     @Override
     public void deleteUser(long userId) {
         userRepository.deleteById(userId);
-        log.info("User has deleted permanent successfully!");
+        log.info("User has deleted permanent successfully, userId={}", userId);
     }
 
     /**
      * Get user detail by userId
-     *
      * @param userId
      * @return
      */
@@ -156,13 +139,12 @@ public class UserServiceImpl implements UserService {
 
     /**
      * Get all user per pageNo and pageSize
-     *
      * @param pageNo
      * @param pageSize
      * @return
      */
     @Override
-    public PageResponse getAllUsers(int pageNo, int pageSize) {
+    public PageResponse<?> getAllUsers(int pageNo, int pageSize) {
         Page<User> page = userRepository.findAll(PageRequest.of(pageNo, pageSize));
 
         List<UserDetailResponse> list = page.stream().map(user -> UserDetailResponse.builder()
@@ -180,135 +162,22 @@ public class UserServiceImpl implements UserService {
                 .toList();
 
         return PageResponse.builder()
-                .page(pageNo)
-                .size(pageSize)
-                .total(page.getTotalPages())
+                .pageNo(pageNo)
+                .pageSize(pageSize)
+                .totalPage(page.getTotalPages())
                 .items(list)
                 .build();
     }
 
-    @Override
-    public PageResponse<?> getAllUsersWithSortBy(int pageNo, int pageSize, String sortBy) {
-        int page = 0;
-        if (pageNo > 0) {
-            page = pageNo - 1;
-        }
-
-        List<Sort.Order> sorts = new ArrayList<>();
-
-        if (StringUtils.hasLength(sortBy)) {
-            // firstName:asc|desc
-            Pattern pattern = Pattern.compile(SORT_BY);
-            Matcher matcher = pattern.matcher(sortBy);
-            if (matcher.find()) {
-                if (matcher.group(3).equalsIgnoreCase("asc")) {
-                    sorts.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
-                } else {
-                    sorts.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
-                }
-            }
-        }
-
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(sorts));
-
-        Page<User> users = userRepository.findAll(pageable);
-        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .build()).toList();
-        return PageResponse.builder()
-                .page(pageNo)
-                .size(pageSize)
-                .total(users.getTotalPages())
-                .items(response)
-                .build();
-    }
-
-    @Override
-    public PageResponse<?> getAllUsersWithSortByMultipleColumns(int pageNo, int pageSize, String... sorts) {
-        int page = 0;
-        if (pageNo > 0) {
-            page = pageNo - 1;
-        }
-
-        List<Sort.Order> orders = new ArrayList<>();
-
-        if (sorts != null) {
-            for (String sortBy : sorts) {
-                log.info("sortBy: {}", sortBy);
-                // firstName:asc|desc
-                Pattern pattern = Pattern.compile("(\\w+?)(:)(.*)");
-                Matcher matcher = pattern.matcher(sortBy);
-                if (matcher.find()) {
-                    if (matcher.group(3).equalsIgnoreCase("asc")) {
-                        orders.add(new Sort.Order(Sort.Direction.ASC, matcher.group(1)));
-                    } else {
-                        orders.add(new Sort.Order(Sort.Direction.DESC, matcher.group(1)));
-                    }
-                }
-            }
-        }
-
-        Pageable pageable = PageRequest.of(page, pageSize, Sort.by(orders));
-
-        Page<User> users = userRepository.findAll(pageable);
-        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .build()).toList();
-        return PageResponse.builder()
-                .page(pageNo)
-                .size(pageSize)
-                .total(users.getTotalPages())
-                .items(response)
-                .build();
-    }
-
-    @Override
-    public PageResponse<?> getAllUsersAndSearchWithPagingAndSorting(int pageNo, int pageSize, String search, String sort) {
-        return searchRepository.searchUser(pageNo, pageSize, search, sort);
-    }
-
-    @Override
-    public PageResponse<?> advanceSearchWithCriteria(int pageNo, int pageSize, String sortBy, String address, String... search) {
-        return searchRepository.searchUserByCriteria(pageNo, pageSize, sortBy, address, search);
-    }
-
-    @Override
-    public PageResponse<?> advanceSearchWithSpecifications(Pageable pageable, String[] user, String[] address) {
-        log.info("getUsersBySpecifications");
-
-        if (user != null && address != null) {
-            return searchRepository.searchUserByCriteriaWithJoin(pageable, user, address);
-        } else if (user != null) {
-            UserSpecificationsBuilder builder = new UserSpecificationsBuilder();
-
-            Pattern pattern = Pattern.compile(SEARCH_SPEC_OPERATOR);
-            for (String s : user) {
-                Matcher matcher = pattern.matcher(s);
-                if (matcher.find()) {
-                    builder.with(matcher.group(1), matcher.group(2), matcher.group(4), matcher.group(3), matcher.group(5));
-                }
-            }
-
-            Page<User> users = userRepository.findAll(Objects.requireNonNull(builder.build()), pageable);
-
-            return convertToPageResponse(users, pageable);
-        }
-
-        return convertToPageResponse(userRepository.findAll(pageable), pageable);
-    }
-
+    /**
+     * Get user by userId
+     *
+     * @param userId
+     * @return User
+     */
     private User getUserById(long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        return userRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException(Translator.toLocale("user.not.found")));
     }
-
 
     /**
      * Covert Set<AddressDTO> to Set<Address>
@@ -331,28 +200,5 @@ public class UserServiceImpl implements UserService {
                         .build())
         );
         return result;
-    }
-
-    /**
-     * Convert Page<User> to PageResponse
-     *
-     * @param users
-     * @param pageable
-     * @return
-     */
-    private PageResponse<?> convertToPageResponse(Page<User> users, Pageable pageable) {
-        List<UserDetailResponse> response = users.stream().map(user -> UserDetailResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .build()).toList();
-        return PageResponse.builder()
-                .page(pageable.getPageNumber())
-                .size(pageable.getPageSize())
-                .total(users.getTotalPages())
-                .items(response)
-                .build();
     }
 }

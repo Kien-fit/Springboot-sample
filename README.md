@@ -18,16 +18,14 @@
 - Java 17
 - Maven 3.5+
 - Spring Boot 3.2.*
-- Spring Data Validation
-- Spring Data JPA
-- Postgres
+- Spring Security
 - Lombok
 - DevTools
 - Docker, Docker compose
 
 ---
 
-## Topic: Spring Data JPA - Series
+## Spring Security JWT
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/jpa-query-method
+- git checkout feature/spring-security-jwt

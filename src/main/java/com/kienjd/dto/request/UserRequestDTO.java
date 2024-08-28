@@ -7,9 +7,9 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import com.kienjd.dto.validator.EnumPattern;
+import com.kienjd.dto.validator.EnumValue;
 import com.kienjd.dto.validator.GenderSubset;
 import com.kienjd.dto.validator.PhoneNumber;
-import com.kienjd.dto.validator.EnumValue;
 import com.kienjd.util.Gender;
 import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
@@ -37,8 +37,6 @@ public class UserRequestDTO implements Serializable {
     private String phone;
 
     @NotNull(message = "dateOfBirth must be not null")
-    //@DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    //@JsonFormat(pattern = "MM/dd/yyyy")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
     private Date dateOfBirth;
 

@@ -1,26 +1,29 @@
 package com.kienjd.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import com.kienjd.util.Gender;
 import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 @Setter
 @Getter
+@Entity
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity
 @Table(name = "tbl_user")
-public class User extends AbstractEntity {
+public class User extends AbstractEntity<Long> implements UserDetails {
 
     @Column(name = "first_name")
     private String firstName;
@@ -62,6 +65,12 @@ public class User extends AbstractEntity {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Address> addresses = new HashSet<>();
 
+    @OneToMany(mappedBy = "user")
+    private Set<UserHasRole> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<GroupHasUser> groups = new HashSet<>();
+
     public void saveAddress(Address address) {
         if (address != null) {
             if (addresses == null) {
@@ -72,9 +81,28 @@ public class User extends AbstractEntity {
         }
     }
 
-    // https://stackoverflow.com/questions/56899986/why-infinite-loop-hibernate-when-load-data
-    @JsonIgnore // Stop infinite loop
-    public Set<Address> getAddresses() {
-        return addresses;
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream().map(u -> new SimpleGrantedAuthority(u.getRole().getName())).toList();
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return UserStatus.ACTIVE.equals(status);
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }
