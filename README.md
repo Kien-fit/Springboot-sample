@@ -25,7 +25,7 @@
 
 ---
 
-## Forgot Password
+## Send Email with Google smpt
 ### Lấy Source Code Về
 - git clone https://github.com/Kien-fit/springboot-sample.git
-- git checkout feature/forgot-password
+- git checkout feature/send-email-with-google-smpt
