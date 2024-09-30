@@ -2,6 +2,8 @@ package com.kienjd.service.impl;
 
 import com.kienjd.repository.SearchRepository;
 import com.kienjd.repository.specification.UserSpecificationsBuilder;
+import com.kienjd.service.MailService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,8 +22,10 @@ import com.kienjd.repository.UserRepository;
 import com.kienjd.service.UserService;
 import com.kienjd.util.UserStatus;
 import com.kienjd.util.UserType;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,8 +39,8 @@ import static com.kienjd.util.AppConst.SORT_BY;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-
     private final SearchRepository searchRepository;
+    private final MailService mailService;
 
     /**
      * Save new user to DB
@@ -45,7 +49,8 @@ public class UserServiceImpl implements UserService {
      * @return userId
      */
     @Override
-    public long saveUser(UserRequestDTO request) {
+    @Transactional(rollbackFor = Exception.class)
+    public long saveUser(UserRequestDTO request) throws MessagingException, UnsupportedEncodingException {
         User user = User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -70,9 +75,13 @@ public class UserServiceImpl implements UserService {
                         .addressType(a.getAddressType())
                         .build()));
 
-        userRepository.save(user);
+        User result = userRepository.save(user);
 
         log.info("User has saved!");
+
+        if (result != null) {
+            mailService.sendConfirmLink(user.getEmail(), user.getId(), "code@123");
+        }
 
         return user.getId();
     }
@@ -118,6 +127,11 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         log.info("User status has changed successfully!");
+    }
+
+    @Override
+    public String confirmUser(int userId, String verifyCode) {
+        return "Confirmed!";
     }
 
     /**
